@@ -1,0 +1,7 @@
+# 本地模型构建文件
+# 用法：ollama create qwen3:8b -f Modelfile
+#
+# 模型来源：ModelScope 官方 Qwen3-8B-GGUF，Q4_K_M 量化（约 4.68GB）
+# 该文件与 Ollama registry 等价版本一致；此处从国内源下载，规避 registry 慢的问题。
+# 模型文件本体不放 git 仓库，存放于 D:\智协二面\Models\
+FROM D:/models/Qwen3-8B-Q4_K_M.gguf
