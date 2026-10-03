@@ -5,6 +5,10 @@ __pycache__/
 venv/
 .env
 
+# 桌宠工程（依赖与构建产物不入库）
+coopanion/node_modules/
+coopanion/build/
+
 # 编辑器 / 系统
 .idea/
 .vscode/
