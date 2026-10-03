@@ -9,6 +9,14 @@ venv/
 coopanion/node_modules/
 coopanion/build/
 
+# 其他 AI 工具的工作目录
+.workbuddy/
+
+# shim 运行时产物
+shim/run.log
+shim/run.err
+shim/last-input.json
+
 # 编辑器 / 系统
 .idea/
 .vscode/
