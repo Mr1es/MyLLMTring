@@ -21,7 +21,7 @@ const http = require('node:http');
 
 const PORT = 8787;
 const DIFY_URL = 'http://192.168.126.128/v1/chat-messages'; // VM 里的 Dify
-const DIFY_KEY = 'app-cSiKz4lKqg9gHoxkyzHcbz1W';            // Dify 应用的 API Key
+const DIFY_KEY = process.env.DIFY_KEY || 'app-YOUR-KEY-HERE'; // Dify 应用的 API Key（从环境变量读，勿把真 key 提交进仓库）
 const DIFY_USER = 'coopanion-pet';
 const MODEL = 'qwen3:8b';
 

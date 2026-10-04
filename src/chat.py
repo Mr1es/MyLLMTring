@@ -9,6 +9,7 @@
 
 import argparse
 import json
+import os
 import re
 import urllib.error
 import urllib.request
@@ -19,7 +20,7 @@ OLLAMA_MODEL = "qwen3:8b"
 
 # ---------- 模式二：经 Dify 智能体 ----------
 DIFY_URL = "http://192.168.126.128/v1/chat-messages"
-DIFY_KEY = "app-cSiKz4lKqg9gHoxkyzHcbz1W"
+DIFY_KEY = os.environ.get("DIFY_KEY", "app-YOUR-KEY-HERE")  # 从环境变量读，勿把真key提交进仓库
 DIFY_USER = "cli-debug"
 
 
