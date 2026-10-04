@@ -13,6 +13,7 @@ import os
 import re
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 # ---------- 模式一：直连本地 Ollama ----------
 OLLAMA_URL = "http://localhost:11434/api/chat"
@@ -20,8 +21,32 @@ OLLAMA_MODEL = "qwen3:8b"
 
 # ---------- 模式二：经 Dify 智能体 ----------
 DIFY_URL = "http://192.168.126.128/v1/chat-messages"
-DIFY_KEY = os.environ.get("DIFY_KEY", "app-YOUR-KEY-HERE")  # 从环境变量读，勿把真key提交进仓库
 DIFY_USER = "cli-debug"
+
+
+def _load_dotenv() -> None:
+    """读取 shim/.env，让 CLI 和桌宠用同一份 key。
+
+    与 shim/config.js 的规则保持一致：只认 KEY=VALUE，# 开头是注释，
+    已存在的系统环境变量优先、不被文件覆盖。真 key 不进仓库（.env 已被 git 忽略）。
+    """
+    env_file = Path(__file__).resolve().parent.parent / "shim" / ".env"
+    if not env_file.exists():
+        return
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, raw = line.partition("=")
+        key = key.strip()
+        value = raw.strip().strip('"').strip("'")
+        os.environ.setdefault(key, value)
+
+
+_load_dotenv()
+
+# 从环境变量读，勿把真 key 提交进仓库。shim/.env 优先，系统环境变量覆盖之。
+DIFY_KEY = os.environ.get("DIFY_KEY", "app-YOUR-KEY-HERE")
 
 
 def ollama_chat(message: str) -> str:
@@ -124,7 +149,10 @@ def main() -> None:
         except urllib.error.HTTPError as exc:
             body = exc.read().decode("utf-8", errors="replace")
             print(f"[错误] HTTP {exc.code} {exc.reason}: {body}")
-            if args.provider == "dify":
+            if exc.code == 401 and args.provider == "dify":
+                print("排查：这是 key 问题，不是 VM 问题。检查 shim/.env（或环境变量 DIFY_KEY）里"
+                      "是否填了真 key、占位符有没有换掉（搜 KEY-HERE）。")
+            elif args.provider == "dify":
                 print("排查：① VM 开着吗 ② Dify 容器起来了吗（VM 里 sudo docker ps）"
                       " ③ 浏览器能开 http://192.168.126.128 吗")
             else:

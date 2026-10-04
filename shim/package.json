@@ -1,0 +1,13 @@
+{
+  "name": "myllmtring-shim",
+  "version": "1.0.0",
+  "private": true,
+  "description": "协议适配层：在开源桌宠与本地模型之间交换协议（零第三方依赖，仅用 node:http 与全局 fetch）",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

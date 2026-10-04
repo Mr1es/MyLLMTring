@@ -1,0 +1,16 @@
+{
+  "name": "myllmtring",
+  "version": "1.0.0",
+  "private": true,
+  "description": "大肥鱼桌面宠物：Electron 桌宠 -> shim(127.0.0.1:8787) -> Dify -> Ollama + Qwen3:8b 的全本地闭环",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "shim": "node shim/index.js",
+    "pet": "cd /d coopanion && pnpm dev",
+    "chat:dify": "python src/chat.py --provider dify",
+    "chat:ollama": "python src/chat.py --provider ollama"
+  }
+}
