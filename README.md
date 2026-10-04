@@ -181,7 +181,7 @@ user message 只有一句「`[system] 2 条新事件。`」，且每轮发的是
 | 文档 | 解决什么问题 |
 | --- | --- |
 | [`shim/README.md`](shim/README.md) | **最重要**。端点契约、SSE 六事件序列、`arguments` 铁律、Cortico input 结构、配置项、`DEBUG=1` 调试、故障排查表 |
-| [`docs/startup.md`](docs/startup.md) | `start-pet.bat` 六个步骤各自检查什么、失败了怎么办 |
+| [`docs/startup.md`](docs/startup.md) | `start-pet.bat` 五个步骤各自检查什么、失败了怎么办 |
 | [`src/README.md`](src/README.md) | 联调 CLI 的两种模式、用法，以及它和 shim 的重复实现问题 |
 | [`docs/README.md`](docs/README.md) | 全部文档索引：开发日志怎么读、各文档什么时候看 |
 | [`docs/REVIEW.md`](docs/REVIEW.md) | 代码审查报告：工程现状、已知技术债、「如果只做三件事」 |
