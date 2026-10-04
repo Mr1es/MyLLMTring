@@ -1,12 +1,18 @@
 @echo off
 REM ---------------------------------------------------------------
 REM  MyLLMTring desktop pet launcher
-REM  Chain: Dify key check -> Ollama -> Dify (VMware VM) -> shim -> Coopanion
-REM  Double-click this file. Keep the window open to keep the pet.
+REM  Chain: Dify key -> Ollama -> Dify (VMware VM) -> shim -> Coopanion
+REM  Double-click to start. Keep this window open to keep the pet.
 REM
-REM  内部调用：start-pet.bat --watch-console
-REM    不跑主流程，只在后台等控制台就绪后把provider 切成本地 shim。
-REM    由主流程用 start /min 另开一个实例调用，不要手动跑。
+REM  NOTE: keep this file ASCII-only. cmd.exe reads .bat using the
+REM  system code page (936/GBK on Chinese Windows). A UTF-8 file with
+REM  Chinese characters gets decoded as mojibake, which splits
+REM  "REM ..." into bogus commands and breaks every PowerShell line.
+REM
+REM  Internal call: start-pet.bat --watch-console
+REM    Skips the main flow; only waits for the console then switches
+REM    the provider to the local shim. Invoked via "start /min".
+REM    Do not run it by hand.
 REM ---------------------------------------------------------------
 setlocal
 set ROOT=D:\aiu\MyLLMTring
@@ -16,10 +22,11 @@ if "%~1"=="--watch-console" goto :watch_console
 
 echo [1/5] Checking Dify API key ...
 if defined DIFY_KEY goto :key_ok
-if not exist "%ROOT%\shim\.env" goto :no_key
-findstr /C:"KEY-HERE" "%ROOT%\shim\.env" >nul
-if not errorlevel 1 goto :no_key
-findstr /C:"DIFY_KEY=app-" "%ROOT%\shim\.env" >nul
+REM Do NOT use findstr on .env here. .env is UTF-8 (it has Chinese
+REM comments) but findstr reads with the system code page (936/GBK),
+REM so the mojibake breaks the match and a valid key looks missing.
+REM Node reads .env as UTF-8, so ask Node instead.
+node -e "try{const k=require('./shim/config').DIFY_KEY||'';process.exit(k&&k.startsWith('app-')&&!k.includes('KEY-HERE')?0:1)}catch(e){process.exit(1)}"
 if errorlevel 1 goto :no_key
 :key_ok
 echo       OK
@@ -53,8 +60,11 @@ echo       Console: http://127.0.0.1:17788
 echo       Close this window (or press Ctrl+C) to stop the pet.
 echo.
 
-REM 控制台 17788 是 pnpm dev 起来后才开的，所以不能先等它再启动——
-REM 那会白等满 30 秒。改为后台并行探测：桌宠一边起，控制台一就绪就切provider。
+REM Port 17788 only opens AFTER "pnpm dev" starts, so waiting for it
+REM before starting the pet means waiting for a service that is not up
+REM yet - that deadlocked the launcher for a fixed 30 seconds.
+REM Now: start the pet immediately, and probe 17788 in a background
+REM instance; switch provider the moment the console is ready.
 start "MyLLMTring provider" /min cmd /c "call \"%ROOT%\start-pet.bat\" --watch-console"
 
 cd /d "%ROOT%\coopanion"
@@ -62,8 +72,9 @@ pnpm dev
 goto :eof
 
 REM ---------------------------------------------------------------
-REM  后台任务（由上面 start 调用）：等控制台就绪后自动切到本地 shim
-REM  单独开一个 bat 实例，用 --watch-console 参数进入，不影响主流程
+REM  Background task (launched above): wait for the console, then
+REM  switch the provider to the local shim. Runs in its own bat
+REM  instance via --watch-console; does not affect the main flow.
 REM ---------------------------------------------------------------
 :watch_console
 set /a tries=0
@@ -82,12 +93,13 @@ exit /b 0
 :no_key
 echo.
 echo [FAIL] No usable Dify API key.
-echo        The key cannot live in the repo, so it goes in one of two places:
-echo          1) %ROOT%\shim\.env   -- a line like   DIFY_KEY=app-xxxxxxxx
-echo          2) a Windows env var named DIFY_KEY (env var wins)
+echo        The key cannot live in the repo, so put it in ONE of these:
+echo          1) %ROOT%\shim\.env   with a line   DIFY_KEY=app-xxxxxxxx
+echo          2) a Windows env var named DIFY_KEY  (env var wins over file)
 echo        The old key was revoked because it had been committed to GitHub.
-echo        Get a new one: Dify console -^> your app -^> API access -^> API keys.
+echo        Get a new one from the Dify console: your app -^> API access -^> API keys.
 echo        Then double-click this file again.
+echo.
 pause
 exit /b 1
 
@@ -96,6 +108,7 @@ echo.
 echo [FAIL] Ollama is not running.
 echo        Start it first: run "ollama serve" in a terminal, or launch Ollama
 echo        from the system tray, then double-click this file again.
+echo.
 pause
 exit /b 1
 
@@ -105,5 +118,6 @@ echo [FAIL] Dify is not reachable at %DIFY%
 echo        Boot the VMware Ubuntu VM first and wait 1-2 minutes
 echo        (docker and all 15 containers start by themselves),
 echo        then double-click this file again.
+echo.
 pause
 exit /b 1
